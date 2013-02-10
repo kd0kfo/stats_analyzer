@@ -44,7 +44,4 @@ def parse_file(_file):
         add_visitor(retval,curr_visitor)
     curr_visitor = None
 
-    print("\nLIST:")
-    for i in retval:
-        print(str(retval[i]))
-
+    return retval

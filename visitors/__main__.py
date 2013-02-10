@@ -3,4 +3,7 @@ if __name__ == "__main__":
     import visitors
     if len(argv) == 1:
         exit(0)
-    visitors.parse_file(argv[1])
+    visits = visitors.parse_file(argv[1])
+    
+    for i in visits:
+        print("%s" % visits[i])
