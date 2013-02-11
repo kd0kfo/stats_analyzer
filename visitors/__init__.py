@@ -34,8 +34,9 @@ def parse_file(_file):
         if not ":" in line:
             raise Exception("Broken IP block. Missing ':' on line: %s" % line)
         tokens = line.split(":")
-        key = tokens[0].lower()
+        key = tokens[0].strip().lower()
         val = ":".join(tokens[1:])
+        val = val.strip()
         if not curr_visitor:
             curr_visitor = Visitor({})
         curr_visitor.data[key] = val
@@ -45,3 +46,35 @@ def parse_file(_file):
     curr_visitor = None
 
     return retval
+
+def intersect(file1, file2):
+    set1 = parse_file(file1)
+    set2 = parse_file(file2)
+    
+    retval = {}
+    for i in set1:
+        if i in set2:
+            retval[i] = set1[i]
+    
+    return retval
+
+def lookup(_file1, canonical):
+    file = None
+    if isinstance(_file1,str):
+        file = open(_file1,"r")
+    else:
+        file = _file1
+        
+    retval = {}
+    for line in file:
+        line = line.strip()
+        if not line:
+            continue
+        tokens = line.split("\t")
+        ip = tokens[0].strip()
+        if not ip in canonical:
+            continue
+        retval[ip] = canonical[ip]
+    
+    return retval
+            
