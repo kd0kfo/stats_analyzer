@@ -47,7 +47,7 @@ if __name__ == "__main__":
         if len(args) < 2:
             print("Relative complement requires two files. Received: %d" % len(args))
             exit(1)
-        print_all(visitors.relative(args[0],args[1]))
+        print_all(visitors.rel_complement(args[0],args[1]))
         exit(0)
     if find_unknown:
         unknowns = visitors.find_unknown(args[0],canonical_list)

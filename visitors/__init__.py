@@ -10,21 +10,21 @@ class Visitor():
                 retval += "%s: %s\n" % (i.capitalize(),self.data[i])
         return retval
 
-def add_visitor(map, visitor):
+def add_visitor(vistor_map, visitor):
     if not "ip" in visitor.data:
         raise Exception("Broken IP block. Missing IP address. Keys %s" % visitor.data.keys())
-    map[visitor.data["ip"]] = visitor
+    vistor_map[visitor.data["ip"]] = visitor
         
 def parse_file(_file):
-    file = None
+    infile = None
     if isinstance(_file,str):
-        file = open(_file,"r")
+        infile = open(_file,"r")
     else:
-        file = _file
+        infile = _file
         
     retval = {}
     curr_visitor = None
-    for line in file:
+    for line in infile:
         line = line.strip()
         if not line:
             if curr_visitor:
