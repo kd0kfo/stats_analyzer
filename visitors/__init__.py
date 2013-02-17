@@ -85,7 +85,14 @@ def lookup(_file1, canonical):
         ip = tokens[0].strip()
         if not ip in canonical:
             continue
+        last_date = None
+        if len(tokens) >= 5:
+            last_date = tokens[4]
         retval[ip] = canonical[ip]
+        if last_date:
+            retval[ip].data["Last Date"] = last_date
+
+
     
     return retval
             
