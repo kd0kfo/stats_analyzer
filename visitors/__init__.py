@@ -70,14 +70,14 @@ def rel_complement(file1,file2):
     return retval
 
 def lookup(_file1, canonical):
-    file = None
+    infile = None
     if isinstance(_file1,str):
-        file = open(_file1,"r")
+        infile = open(_file1,"r")
     else:
-        file = _file1
+        infile = _file1
         
     retval = {}
-    for line in file:
+    for line in infile:
         line = line.strip()
         if not line:
             continue
@@ -86,25 +86,30 @@ def lookup(_file1, canonical):
         if not ip in canonical:
             continue
         last_date = None
+        latest_hits = None
         if len(tokens) >= 5:
             last_date = tokens[4]
+        if len(tokens) >= 3:
+            latest_hits = tokens[2]
         retval[ip] = canonical[ip]
         if last_date:
             retval[ip].data["Last Date"] = last_date
+        if last_date:
+            retval[ip].data["Latest Hits"] = latest_hits
 
 
     
     return retval
             
 def find_unknown(_file1, canonical):
-    file = None
+    infile = None
     if isinstance(_file1,str):
-        file = open(_file1,"r")
+        infile = open(_file1,"r")
     else:
-        file = _file1
+        infile = _file1
         
     retval = {}
-    for line in file:
+    for line in infile:
         line = line.strip()
         if not line:
             continue
