@@ -58,6 +58,17 @@ def intersect(file1, file2):
     
     return retval
 
+def rel_complement(file1,file2):
+    set1 = parse_file(file1)
+    set2 = parse_file(file2)
+    
+    retval = {}
+    for i in set1:
+        if not i in set2:
+            retval[i] = set1[i]
+    
+    return retval
+
 def lookup(_file1, canonical):
     file = None
     if isinstance(_file1,str):
@@ -78,3 +89,21 @@ def lookup(_file1, canonical):
     
     return retval
             
+def find_unknown(_file1, canonical):
+    file = None
+    if isinstance(_file1,str):
+        file = open(_file1,"r")
+    else:
+        file = _file1
+        
+    retval = {}
+    for line in file:
+        line = line.strip()
+        if not line:
+            continue
+        tokens = line.split("\t")
+        ip = tokens[0].strip()
+        if not ip in canonical:
+            retval[ip] = line
+    
+    return retval
