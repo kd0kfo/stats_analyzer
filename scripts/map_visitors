@@ -1,0 +1,68 @@
+#!/usr/bin/python
+from sys import argv
+from getopt import getopt,GetoptError
+import local_settings
+
+def import_list(new_list, canonical_list):
+    for key in new_list:
+        if not key in canonical_list:
+            canonical_list[key] = new_list[key]
+
+canonical_list = {}
+
+try:
+    (opts,args) = getopt(argv[1:],"c:l:",["canonical=","cli","locations="])
+except GetoptError as ge:
+    print(ge.msg)
+    error_out(HELP_WARNING)
+
+for (opt, optarg) in opts:
+    while opt[0] == '-':
+        opt = opt[1:]
+    if opt in ["c","canonical"]:
+        import visitors
+        new_list = visitors.parse_file(optarg)
+        import_list(new_list,canonical_list)
+    elif opt == "cli":
+        use_gui = False
+    elif opt in ["l","locations"]:
+        import visitors
+        new_list = visitors.parse_jsonfile(optarg)
+        import_list(new_list,canonical_list)
+if ".gz" in args[0]:
+    import gzip
+    infile = gzip.open(args[0],"r")
+else:
+    infile = open(args[0],"r")
+
+header = open(local_settings.HEADER,"r").read()
+footer = open(local_settings.FOOTER,"r").read()
+
+print(header)
+
+for line in infile:
+    line = line.strip()
+    if not line:
+        continue
+    ip = line.split()[0]
+    if not ip in canonical_list:
+        continue
+    data = canonical_list[ip].data
+    if not "longitude" in data or not "latitude" in data:
+        continue
+    print("<Placemark>")
+    print("<name>{0}</name>".format(ip))
+    print("<open>1</open>")
+    print("<LookAt>")
+    print("<longitude>{0}</longitude>".format(data['longitude']))
+    print("<latitude>{0}</latitude>".format(data['latitude']))
+    print("</LookAt>")
+    print("<styleUrl>#msn_ylw-pushpin_copy12</styleUrl>")
+    print("<Point>")
+    print("<coordinates>{0},{1},0.1062,0</coordinates>".format(data['longitude'], data['latitude']))
+    print("</Point>")
+    print("</Placemark>")
+         
+
+print(footer)
+        
