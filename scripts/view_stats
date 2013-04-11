@@ -10,26 +10,59 @@ class Viewer:
     def init_tree(self):
         self.window=Tk()
         self.tree = ttk.Treeview(self.window)
-        self.tree["columns"]=("date","request")
-        self.tree.column("#0",width=120)
-        self.tree.column("date",width=190)
-        self.tree.column("request",width=300)
-        self.tree.heading("#0",text="IP")
-        self.tree.heading("date",text="Date")
-        self.tree.heading("request",text="Request")
+        self.tree["columns"]=("ip","loc","name")
+        self.tree.column("#0",width=5)
+        self.tree.column("ip",width=100)
+        self.tree.column("loc",width=190)
+        self.tree.column("name",width=190)
+        self.tree.heading("ip",text="IP")
+        self.tree.heading("loc",text="Location")
+        self.tree.heading("name",text="Name")
         self.unique_id = 0
         self.id_map = {}
 
-    def insert_line(self,line):
+    def get_loc(self,data):
+        retval = ""
+        if "city" in data:
+            retval += data["city"]
+        if "stateprov" in data:
+            if "city" in data:
+                retval += ", "
+            retval += data["stateprov"]
+        if "country" in data:
+            if "city" in data or "state" in data:
+                retval += " "
+            retval += data["country"]
+        
+        return retval
+
+    def get_name(self,data):
+        if "orgid" in data:
+            return data["orgid"]
+        if "orgname" in data:
+            return data["orgname"]
+        return ""
+
+    def insert_line(self,line,canonical_list):
+        tokens = line.split()
+        ip = tokens[0]
         if self.window:
-            tokens = line.split()
-            ip = tokens[0]
             timestamp = tokens[3]
             request = " ".join(tokens[5:])
             if timestamp[0] == '[':
                 timestamp = timestamp[1:]
             if not ip in self.id_map:
-                line_id = self.tree.insert("","end",self.unique_id,text=tokens[0])
+                loc = ""
+                name = ""
+                if canonical_list and ip in canonical_list:
+                    try:
+                        data = canonical_list[ip].data
+                        loc = self.get_loc(data)
+                        name = self.get_name(data)
+                    except KeyError as ke:
+                        print("Data: {0}".format(data))
+                        raise ke
+                line_id = self.tree.insert("","end",self.unique_id,values=[tokens[0], loc, name])
                 self.id_map[ip] = line_id
                 self.unique_id += 1
             else:
@@ -38,6 +71,9 @@ class Viewer:
             self.unique_id += 1
         else:
             print(line)
+            if canonical_list and ip in canonical_list:
+                print(canonical_list[ip].data)
+            print("")
 
     def show_dialog(self):
         if self.window:
@@ -45,6 +81,10 @@ class Viewer:
             self.tree.pack(side=TOP,fill=X)
             self.window.mainloop()
 
+def import_list(new_list, canonical_list):
+    for key in new_list:
+        if not key in canonical_list:
+            canonical_list[key] = new_list[key]
 
 from sys import argv
 from getopt import getopt,GetoptError
@@ -52,9 +92,10 @@ from getopt import getopt,GetoptError
 # Defaults
 viewer = Viewer()
 use_gui = True
+canonical_list = {}
 
 try:
-    (opts,args) = getopt(argv[1:],"",["cli"])
+    (opts,args) = getopt(argv[1:],"c:l:",["canonical=","cli","locations="])
 except GetoptError as ge:
     print(ge.msg)
     error_out(HELP_WARNING)
@@ -62,8 +103,17 @@ except GetoptError as ge:
 for (opt, optarg) in opts:
     while opt[0] == '-':
         opt = opt[1:]
-    if opt == "cli":
+    if opt in ["c","canonical"]:
+        import visitors
+        new_list = visitors.parse_file(optarg)
+        import_list(new_list,canonical_list)
+    elif opt == "cli":
         use_gui = False
+    elif opt in ["l","locations"]:
+        import visitors
+        new_list = visitors.parse_jsonfile(optarg)
+        import_list(new_list,canonical_list)
+        
 
 if len(args) != 1:
     error_out(HELP_WARNING)
@@ -80,6 +130,6 @@ else:
     infile = open(infilename,"r")
 
 for line in infile:
-    viewer.insert_line(line.strip())
+    viewer.insert_line(line.strip(),canonical_list)
 
 viewer.show_dialog()
