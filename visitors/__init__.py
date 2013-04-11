@@ -47,6 +47,34 @@ def parse_file(_file):
 
     return retval
 
+UNKNOWN = "UNK"
+def json2visitor(json):
+    data = {}
+    data['ip'] = json['ip']
+    data['country'] = json['country_code']
+    data['city'] = json['city']
+    data['orgid'] = UNKNOWN
+    data['stateprov'] = json['region_code']
+    data['postalcode'] = json['zipcode']
+    data['country'] = json['country_code']
+    data['latitude'] = json['latitude']
+    data['longitude'] = json['longitude']
+    return Visitor(data)
+
+def parse_jsonfile(_file):
+    import json
+    visitor_map = {}
+    infile = None
+    if isinstance(_file,str):
+        infile = open(_file,"r")
+    else:
+        infile = _file
+
+    json_array = json.loads(infile.read())
+    for data in json_array:
+        add_visitor(visitor_map,json2visitor(data))
+    return visitor_map
+        
 def intersect(file1, file2):
     set1 = parse_file(file1)
     set2 = parse_file(file2)
