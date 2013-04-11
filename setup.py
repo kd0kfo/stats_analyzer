@@ -9,5 +9,5 @@ setup (name ='stats_analyzer',
        description = 'Website visitor analyzer',
        author_email='david@davecoss.com',
        packages = ['visitors'],
-       scripts = ['scripts/view_stats'],
+       scripts = ['scripts/view_stats','scripts/map_visitors'],
        )
